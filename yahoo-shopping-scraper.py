@@ -1,36 +1,59 @@
 """
-Yahoo Shopping Scraper: A Quick Start Example
-See more at: https://apify.com/johnvc/Yahoo-Shopping-Search-Scraper?fpr=9n7kx3
-Input schema: https://apify.com/johnvc/Yahoo-Shopping-Search-Scraper/input-schema?fpr=9n7kx3
+Example: call the Yahoo Shopping API Apify Actor from Python.
 
-This script demonstrates how to scrape product listings from Yahoo Shopping
-using the Yahoo Shopping Search Scraper on Apify. Returns product names,
-prices, seller info, ratings, and descriptions as structured JSON.
+Get a free Apify API key at: https://apify.com?fpr=9n7kx3
+Set it in a .env file (see .env.example) or export APIFY_API_TOKEN.
 
-Get your free Apify API key at: https://apify.com?fpr=9n7kx3
+The example fetches a single page so the first run is inexpensive. Raise
+max_pages when you want more results; each page is billed separately.
 """
 
 import os
-from dotenv import load_dotenv
+
 from apify_client import ApifyClient
+from dotenv import load_dotenv
 
 load_dotenv()
 
-# Initialize the ApifyClient with your API token
-client = ApifyClient(os.getenv("APIFY_API_TOKEN"))
+APIFY_API_TOKEN = os.getenv("APIFY_API_TOKEN")
+if not APIFY_API_TOKEN:
+    raise SystemExit(
+        "APIFY_API_TOKEN is not set. Copy .env.example to .env and add your key, "
+        "or run: export APIFY_API_TOKEN=your_api_key_here"
+    )
 
-# Prepare the Actor input
+client = ApifyClient(APIFY_API_TOKEN)
+
+# Inputs are kept small so the first run is inexpensive: one page, 10 results.
 run_input = {
-    "query": "wireless headphones",
-    "min_price": "50.00",
-    "max_price": "200.00",
-    "sort_by": "price",
-    "max_pages": 2,
+    "query": "coffee maker",
+    "limit": 10,
+    "max_pages": 1,
 }
 
-# Run the Actor and wait for it to finish
+print(f"Searching Yahoo Shopping for: {run_input['query']}")
 run = client.actor("johnvc/Yahoo-Shopping-Search-Scraper").call(run_input=run_input)
 
-# Fetch and print Actor results from the run's dataset
-for item in client.dataset(run["defaultDatasetId"]).iterate_items():
-    print(item)
+if run is None:
+    raise SystemExit("The Actor run did not start. Check your API token and inputs.")
+
+# One dataset item is returned per page; each page holds a shopping_results list.
+for page in client.dataset(run.default_dataset_id).iterate_items():
+    metadata = page.get("search_metadata", {})
+    products = page.get("shopping_results", [])
+    print(
+        f"\nPage {page.get('page_number', '?')}: "
+        f"{len(products)} products (total found: {metadata.get('total_results', 'n/a')})\n"
+    )
+
+    for product in products:
+        title = product.get("title", "")
+        seller = product.get("seller", "")
+        price = product.get("price", "")
+        link = product.get("link", "")
+
+        print(f"{product.get('position', '?')}. {title}")
+        print(f"   Seller: {seller}")
+        print(f"   Price:  {price}")
+        print(f"   Link:   {link}")
+        print()

@@ -1,13 +1,13 @@
 [project]
-name = "apify-yahoo-shopping-scraper"
+name = "apify-yahoo-shopping-api"
 version = "0.1.0"
-description = "Example usage of the Yahoo Shopping Search Scraper Apify actor"
-requires-python = ">=3.9"
+description = "Example client for the Yahoo Shopping API Apify Actor"
+readme = "README.md"
+requires-python = ">=3.11"
 dependencies = [
-    "apify-client>=1.8.1",
+    "apify-client>=3.0.0",
     "python-dotenv>=1.0.0",
 ]
 
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+[tool.uv]
+package = false
