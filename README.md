@@ -295,4 +295,4 @@ More help: https://docs.apify.com/platform/integrations/mcp
 
 *Use the Yahoo Shopping API to power price comparison, competitor research, and e-commerce market analysis with reliable, structured results.*
 
-Last Updated: 2026.06.04
+Last Updated: 2026.06.05
